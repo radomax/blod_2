@@ -5,8 +5,8 @@ let currentUser = null;
 // Blood pressure categories
 const bpCategories = {
     normal: { min: [0, 0], max: [130, 85], label: "Normalt", class: "pressure-normal" },
-    highNormal: { min: [130, 85], max: [139, 89], label: "Høyt normalt", class: "pressure-high-normal" },
-    high: { min: [140, 90], max: [179, 109], label: "Forhøyet", class: "pressure-high" },
+    highNormal: { min: [130, 85], max: [140, 90], label: "Høyt normalt", class: "pressure-high-normal" },
+    high: { min: [140, 90], max: [180, 110], label: "Forhøyet", class: "pressure-high" },
     veryHigh: { min: [180, 110], max: [300, 200], label: "Alvorlig forhøyet", class: "pressure-very-high" }
 };
 
@@ -196,12 +196,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('pressureCategory').innerHTML = 
                 `<span class="pressure-status ${category.class}">${category.label}</span>`;
             
-            // Show recommendation based on category (Norwegian pharmacy guidelines)
+            // Show recommendation based on category
             const recommendations = {
-                normal: "Denne målingen viser til et normalt blodtrykk. Basert på denne målingen alene gis det ikke råd om å konsultere lege.",
-                highNormal: "Denne målingen viser til et «høyt normalt» blodtrykk og økt risiko for å utvikle høyt blodtrykk. Ofte tilstrekkelig å endre til et sunnere kosthold og aktivitetsnivå for å holde blodtrykket stabilt. Basert på denne målingen alene, gis det ikke råd om å konsultere lege.",
-                high: "Denne målingen er forhøyet. Basert på denne målingen alene, gis det råd om å konsultere lege.",
-                veryHigh: "Blodtrykket er alvorlig forhøyet, kunden anbefales å oppsøke lege/legevakt umiddelbart."
+                normal: "Normalt blodtrykk. Fortsett med sunt livsstil.",
+                highNormal: "Høyt normalt blodtrykk. Vurder livsstilsendringer.",
+                high: "Forhøyet blodtrykk. Det anbefales å konsultere lege.",
+                veryHigh: "Alvorlig forhøyet blodtrykk. Kontakt lege/legevakt umiddelbart."
             };
             
             document.getElementById('pressureCategory').innerHTML += 
@@ -287,39 +287,38 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function collectFormData() {
-        const sys2 = parseInt(document.getElementById('measurement2Sys').value);
-        const dia2 = parseInt(document.getElementById('measurement2Dia').value);
-        const sys3 = parseInt(document.getElementById('measurement3Sys').value);
-        const dia3 = parseInt(document.getElementById('measurement3Dia').value);
-        
-        const avgSys = Math.round((sys2 + sys3) / 2);
-        const avgDia = Math.round((dia2 + dia3) / 2);
+    const sys2 = parseInt(document.getElementById('measurement2Sys').value);
+    const dia2 = parseInt(document.getElementById('measurement2Dia').value);
+    const sys3 = parseInt(document.getElementById('measurement3Sys').value);
+    const dia3 = parseInt(document.getElementById('measurement3Dia').value);
+    
+    const avgSys = Math.round((sys2 + sys3) / 2);
+    const avgDia = Math.round((dia2 + dia3) / 2);
 
-        return {
-            patientId: document.getElementById('patientId').value,
-            patientAge: parseInt(document.getElementById('patientAge').value),
-            patientGender: document.getElementById('patientGender').value,
-            measurementDate: document.getElementById('measurementDate').value,
-            measurementTime: document.getElementById('measurementTime').value,
-            referralSource: document.getElementById('referralSource').value,
-            measurement1Sys: parseInt(document.getElementById('measurement1Sys').value) || null,
-            measurement1Dia: parseInt(document.getElementById('measurement1Dia').value) || null,
-            measurement2Sys: sys2,
-            measurement2Dia: dia2,
-            measurement3Sys: sys3,
-            measurement3Dia: dia3,
-            averageSys: avgSys,
-            averageDia: avgDia,
-            equipment: document.getElementById('equipment').value,
-            cuffSize: document.getElementById('cuffSize').value,
-            armUsed: document.getElementById('armUsed').value,
-            notes: document.getElementById('notes').value
-        };
-    }
+    return {
+        patientId: document.getElementById('patientId').value || 'Ukjent',
+        patientAge: parseInt(document.getElementById('patientAge').value) || 0, // Default to 0 if empty
+        patientGender: document.getElementById('patientGender').value || 'other',
+        measurementDate: document.getElementById('measurementDate').value,
+        measurementTime: document.getElementById('measurementTime').value,
+        referralSource: document.getElementById('referralSource').value || 'other',
+        measurement1Sys: parseInt(document.getElementById('measurement1Sys').value) || null,
+        measurement1Dia: parseInt(document.getElementById('measurement1Dia').value) || null,
+        measurement2Sys: sys2,
+        measurement2Dia: dia2,
+        measurement3Sys: sys3,
+        measurement3Dia: dia3,
+        averageSys: avgSys,
+        averageDia: avgDia,
+        equipment: document.getElementById('equipment').value,
+        cuffSize: document.getElementById('cuffSize').value,
+        armUsed: document.getElementById('armUsed').value,
+        notes: document.getElementById('notes').value || null
+    };
+}
 
     function validateFormData(data) {
-        const required = ['patientId', 'patientAge', 'patientGender', 'measurementDate', 
-                        'referralSource', 'measurement2Sys', 'measurement2Dia', 
+        const required = ['measurement2Sys', 'measurement2Dia', 
                         'measurement3Sys', 'measurement3Dia', 'armUsed'];
         
         for (const field of required) {
