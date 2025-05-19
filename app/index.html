@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blodtrykksmålinger - Registreringssystem</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">Blodtrykksmålinger - Registreringssystem</div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="nav-link active" data-target="register">Registrering</a></li>
+                    <li><a href="#" class="nav-link" data-target="visualize">Statistikk</a></li>
+                    <li><a href="#" class="nav-link" data-target="export">Eksport</a></li>
+                    <li><a href="#" class="nav-link" data-target="contact">Kontakt</a></li>
+                    <li><a href="#" id="loginLink">Logg inn</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="alerts" class="alerts-container"></div>
+
+        <!-- Login Modal -->
+        <div class="modal-backdrop" id="loginModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 class="modal-title">Logg inn</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="username">Brukernavn</label>
+                            <input type="text" id="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Passord</label>
+                            <input type="password" id="password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="role">Rolle</label>
+                            <select id="role">
+                                <option value="user">Ansatt</option>
+                                <option value="admin">Administrator</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary modal-close-btn">Avbryt</button>
+                    <button class="btn" id="loginButton">Logg inn</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registrering Section -->
+        <section id="registerSection" class="tab-content active">
+            <h1>Registrering av blodtrykksmålinger</h1>
+            <p>Registrer blodtrykksmålinger i henhold til prosedyre for apotek.</p>
+            
+            <div class="measurement-steps">
+                <h4>Viktige punkter før måling:</h4>
+                <ol>
+                    <li>Minst 30 minutter siden kunden spiste, drakk kaffe, røykte eller var fysisk aktiv</li>
+                    <li>Kunden sitter stille i minimum 5 minutter før første måling</li>
+                    <li>Utfør totalt 3 målinger med 1 minutts mellomrom</li>
+                    <li>Rapporter gjennomsnittet av måling 2 og 3</li>
+                </ol>
+            </div>
+            
+            <div class="card">
+                <form id="bpForm">
+                    <div class="form-group">
+                        <h2>Pasientinformasjon</h2>
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="patientId">Pasient ID</label>
+                                <input type="text" id="patientId" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientAge">Alder</label>
+                                <input type="number" id="patientAge" min="0" max="120" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientGender">Kjønn</label>
+                                <select id="patientGender" required>
+                                    <option value="">Velg</option>
+                                    <option value="male">Mann</option>
+                                    <option value="female">Kvinne</option>
+                                    <option value="other">Annet</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <h2>Målinginformasjon</h2>
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="measurementDate">Målingsdato</label>
+                                <input type="date" id="measurementDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="measurementTime">Tidspunkt</label>
+                                <input type="time" id="measurementTime" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="referralSource">Henvendelse fra</label>
+                        <select id="referralSource" required>
+                            <option value="">Velg</option>
+                            <option value="maja">Maja.no</option>
+                            <option value="self">Eget initiativ</option>
+                            <option value="doctor">Lege</option>
+                            <option value="other">Annet</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <h3>Blodtrykksmålinger</h3>
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="measurement1Sys">Måling 1 - Systolisk</label>
+                                <input type="number" id="measurement1Sys" min="70" max="250" placeholder="mmHg">
+                            </div>
+                            <div class="form-group">
+                                <label for="measurement1Dia">Måling 1 - Diastolisk</label>
+                                <input type="number" id="measurement1Dia" min="40" max="150" placeholder="mmHg">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="measurement2Sys">Måling 2 - Systolisk</label>
+                                <input type="number" id="measurement2Sys" min="70" max="250" placeholder="mmHg" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="measurement2Dia">Måling 2 - Diastolisk</label>
+                                <input type="number" id="measurement2Dia" min="40" max="150" placeholder="mmHg" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="measurement3Sys">Måling 3 - Systolisk</label>
+                                <input type="number" id="measurement3Sys" min="70" max="250" placeholder="mmHg" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="measurement3Dia">Måling 3 - Diastolisk</label>
+                                <input type="number" id="measurement3Dia" min="40" max="150" placeholder="mmHg" required>
+                            </div>
+                        </div>
+                        <div class="measurement-history" id="averageResult" style="display: none;">
+                            <h4>Gjennomsnitt (måling 2 og 3):</h4>
+                            <div id="averageDisplay"></div>
+                            <div id="pressureCategory"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <h3>Måleutstyr og metode</h3>
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="equipment">Blodtrykksapparat</label>
+                                <select id="equipment">
+                                    <option value="microlife-b2">Microlife B2 Basic</option>
+                                    <option value="microlife-b6">Microlife B6 Connect</option>
+                                    <option value="llp-bt">LLP BT-måler 22-42 cm</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cuffSize">Mansjettstørrelse</label>
+                                <select id="cuffSize">
+                                    <option value="S">S (17-22 cm)</option>
+                                    <option value="M/L">M/L (22-42 cm)</option>
+                                    <option value="L/XL">L/XL (32-52 cm)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="armUsed">Arm brukt for måling</label>
+                                <select id="armUsed" required>
+                                    <option value="">Velg</option>
+                                    <option value="left">Venstre</option>
+                                    <option value="right">Høyre</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Tilleggsnotater</label>
+                        <textarea id="notes" rows="3" placeholder="Eventuelle observasjoner eller kommentarer"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success" id="saveBtn">Lagre måling</button>
+                        <button type="reset" class="btn btn-secondary">Nullstill skjema</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Statistikk Section -->
+        <section id="visualizeSection" class="tab-content">
+            <h1>Statistikk og oversikt</h1>
+            <p>Få oversikt over registrerte blodtrykksmålinger.</p>
+            
+            <div class="grid" id="statsCards">
+                <!-- Stats cards will be populated by JavaScript -->
+            </div>
+            
+            <div class="card">
+                <h2>Siste registreringer</h2>
+                <table id="recentMeasurements">
+                    <thead>
+                        <tr>
+                            <th>Dato</th>
+                            <th>Pasient ID</th>
+                            <th>Alder</th>
+                            <th>Blodtrykk</th>
+                            <th>Kategori</th>
+                            <th>Kilde</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Eksport Section -->
+        <section id="exportSection" class="tab-content">
+            <h1>Eksporter data</h1>
+            <p>Eksporter blodtrykksmålinger for analyse eller rapportering.</p>
+            
+            <div class="card">
+                <h2>Filtrer data for eksport</h2>
+                <form id="exportForm">
+                    <div class="input-group">
+                        <div class="form-group">
+                            <label for="exportFromDate">Fra dato</label>
+                            <input type="date" id="exportFromDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="exportToDate">Til dato</label>
+                            <input type="date" id="exportToDate">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="exportFormat">Eksportformat</label>
+                        <select id="exportFormat">
+                            <option value="csv">CSV</option>
+                            <option value="json">JSON</option>
+                            <option value="excel">Excel</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="button" class="btn" id="exportDataBtn">Eksporter data</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Kontakt Section -->
+        <section id="contactSection" class="tab-content">
+            <h1>Kontakt oss</h1>
+            <p>Spørsmål om blodtrykksmålinger eller teknisk støtte?</p>
+            
+            <div class="card">
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="contactName">Navn</label>
+                        <input type="text" id="contactName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contactEmail">E-post</label>
+                        <input type="email" id="contactEmail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contactSubject">Emne</label>
+                        <select id="contactSubject" required>
+                            <option value="">Velg emne</option>
+                            <option value="measurement">Spørsmål om måling</option>
+                            <option value="equipment">Utstyr og kalibrering</option>
+                            <option value="system">Systemspørsmål</option>
+                            <option value="other">Annet</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contactMessage">Melding</label>
+                        <textarea id="contactMessage" rows="5" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn">Send melding</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="equipment-info">
+                <h3>Kontaktinformasjon Maja.no</h3>
+                <p><strong>Vakttelefon:</strong> 92 117 118</p>
+                <p><strong>Åpningstider:</strong> 8-22 mandag-fredag, 10-18 lørdag-søndag</p>
+                <p><strong>E-post:</strong> hei@maja.no</p>
+                <p><em>Sensitiv informasjon skal ikke sendes via e-post.</em></p>
+            </div>
+        </section>
+
+        <!-- Admin Section (hidden by default) -->
+        <section id="recordListSection" class="tab-content">
+            <h1>Administrer målinger</h1>
+            <p>Oversikt over alle registrerte blodtrykksmålinger.</p>
+            
+            <div class="card">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <input type="text" id="searchRecords" placeholder="Søk på pasient-ID eller dato">
+                    <button class="btn" id="searchRecordsBtn">Søk</button>
+                </div>
+                
+                <div class="loader" id="recordsLoader"></div>
+                
+                <table id="recordsTable">
+                    <thead>
+                        <tr>
+                            <th>Dato</th>
+                            <th>Pasient ID</th>
+                            <th>Alder</th>
+                            <th>Blodtrykk</th>
+                            <th>Kategori</th>
+                            <th>Kilde</th>
+                            <th>Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Om blodtrykksmålinger</h3>
+                    <p>Dette systemet støtter registrering av blodtrykksmålinger i apotek i henhold til gjeldende prosedyrer og retningslinjer.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Nyttige lenker</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Helsedirektoratet</a></li>
+                        <li><a href="#">Maja.no</a></li>
+                        <li><a href="#">Prosedyrer og retningslinjer</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Kontakt</h3>
+                    <p>For teknisk støtte eller spørsmål om systemet, bruk kontaktskjemaet ovenfor.</p>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Blodtrykksmålinger. Alle rettigheter forbeholdt.</p>
+            </div>
+        </div>
+
+    <script src="index.js"></script>
+    </footer>
+
+</body>
+</html>
