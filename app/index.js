@@ -173,6 +173,7 @@
             
             measurementInputs.forEach(id => {
                 document.getElementById(id).addEventListener('input', calculateAverage);
+                document.getElementById(id).addEventListener('blur', calculateAverage);
             });
 
             function calculateAverage() {
@@ -192,10 +193,23 @@
                         `<strong>${avgSys}/${avgDia} mmHg</strong>`;
                     document.getElementById('pressureCategory').innerHTML = 
                         `<span class="pressure-status ${category.class}">${category.label}</span>`;
+                    
+                    // Show recommendation based on category
+                    const recommendations = {
+                        normal: "Normalt blodtrykk. Fortsett med sunt livsstil.",
+                        highNormal: "Høyt normalt blodtrykk. Vurder livsstilsendringer.",
+                        high: "Forhøyet blodtrykk. Det anbefales å konsultere lege.",
+                        veryHigh: "Alvorlig forhøyet blodtrykk. Kontakt lege/legevakt umiddelbart."
+                    };
+                    
+                    document.getElementById('pressureCategory').innerHTML += 
+                        `<p style="margin-top: 10px; font-style: italic;">${recommendations[category.key]}</p>`;
+                } else {
+                    document.getElementById('averageResult').style.display = 'none';
                 }
             }
 
-            // Form submission
+            // Form submission with database save
             document.getElementById('bpForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
@@ -205,24 +219,62 @@
                     return;
                 }
 
-                // Save record
-                const newRecord = {
-                    id: generateUniqueId(),
-                    ...formData,
-                    registeredAt: new Date().toISOString(),
-                    registeredBy: currentUser ? currentUser.username : 'Ukjent'
-                };
+                // Show loading state
+                const saveBtn = document.getElementById('saveBtn');
+                const originalText = saveBtn.textContent;
+                saveBtn.textContent = 'Lagrer...';
+                saveBtn.disabled = true;
 
-                bpRecords.push(newRecord);
-                showAlert('Blodtrykksmåling lagret');
-                this.reset();
-                
-                // Reset calculated values
-                document.getElementById('averageResult').style.display = 'none';
-                
-                // Set default values again
-                document.getElementById('measurementDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('measurementTime').value = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+                // Save to database
+                fetch('api/blood_pressure.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'save',
+                        data: formData
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Add to local array for immediate UI update
+                        const newRecord = {
+                            id: result.data.id,
+                            ...formData,
+                            registeredAt: new Date().toISOString(),
+                            registeredBy: currentUser ? currentUser.username : 'Ukjent'
+                        };
+                        bpRecords.unshift(newRecord);
+                        
+                        showAlert('Blodtrykksmåling lagret i database', 'success');
+                        this.reset();
+                        
+                        // Reset calculated values
+                        document.getElementById('averageResult').style.display = 'none';
+                        
+                        // Set default values again
+                        document.getElementById('measurementDate').value = new Date().toISOString().split('T')[0];
+                        document.getElementById('measurementTime').value = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+                        
+                        // Update statistics if on that page
+                        if (document.getElementById('visualizeSection').classList.contains('active')) {
+                            updateStatistics();
+                        }
+                    } else {
+                        showAlert(`Feil ved lagring: ${result.message}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Nettverksfeil:', error);
+                    showAlert('Kunne ikke koble til database. Prøv igjen senere.', 'error');
+                })
+                .finally(() => {
+                    // Reset button state
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
+                });
             });
 
             function collectFormData() {
@@ -323,87 +375,102 @@
                 }, 1000);
             });
 
-            // Statistics
+            // Statistics with database integration
             function updateStatistics() {
-                if (bpRecords.length === 0) {
-                    generateSampleData();
-                }
+                // Get data from database
+                fetch('api/blood_pressure.php?action=statistics')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const stats = result.data;
+                        const statsCards = document.getElementById('statsCards');
+                        
+                        const highBPPercentage = stats.total > 0 ? 
+                            Math.round((stats.highBP / stats.total) * 100) : 0;
 
-                const statsCards = document.getElementById('statsCards');
-                const recentTable = document.querySelector('#recentMeasurements tbody');
-                
-                // Calculate statistics
-                const totalMeasurements = bpRecords.length;
-                const today = new Date().toISOString().split('T')[0];
-                const todayMeasurements = bpRecords.filter(r => r.measurementDate === today).length;
-                
-                const categories = {};
-                bpRecords.forEach(record => {
-                    const category = categorizeBP(record.averageSys, record.averageDia);
-                    categories[category.key] = (categories[category.key] || 0) + 1;
+                        // Update stats cards
+                        statsCards.innerHTML = `
+                            <div class="stats-card">
+                                <span class="stats-number">${stats.total}</span>
+                                <span class="stats-label">Totale målinger</span>
+                            </div>
+                            <div class="stats-card">
+                                <span class="stats-number">${stats.today}</span>
+                                <span class="stats-label">Målinger i dag</span>
+                            </div>
+                            <div class="stats-card">
+                                <span class="stats-number">${highBPPercentage}%</span>
+                                <span class="stats-label">Forhøyet blodtrykk</span>
+                            </div>
+                            <div class="stats-card">
+                                <span class="stats-number">${stats.avgAge} år</span>
+                                <span class="stats-label">Gjennomsnittsalder</span>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading statistics:', error);
+                    showAlert('Kunne ikke laste statistikk', 'warning');
                 });
 
-                const highBPCount = (categories.high || 0) + (categories.veryHigh || 0);
-                const highBPPercentage = totalMeasurements > 0 ? Math.round((highBPCount / totalMeasurements) * 100) : 0;
-
-                const avgAge = totalMeasurements > 0 ? 
-                    Math.round(bpRecords.reduce((sum, r) => sum + r.patientAge, 0) / totalMeasurements) : 0;
-
-                // Update stats cards
-                statsCards.innerHTML = `
-                    <div class="stats-card">
-                        <span class="stats-number">${totalMeasurements}</span>
-                        <span class="stats-label">Totale målinger</span>
-                    </div>
-                    <div class="stats-card">
-                        <span class="stats-number">${todayMeasurements}</span>
-                        <span class="stats-label">Målinger i dag</span>
-                    </div>
-                    <div class="stats-card">
-                        <span class="stats-number">${highBPPercentage}%</span>
-                        <span class="stats-label">Forhøyet blodtrykk</span>
-                    </div>
-                    <div class="stats-card">
-                        <span class="stats-number">${avgAge} år</span>
-                        <span class="stats-label">Gjennomsnittsalder</span>
-                    </div>
-                `;
-
-                // Update recent measurements table
-                const recentRecords = bpRecords.slice(-10).reverse();
-                recentTable.innerHTML = recentRecords.map(record => {
-                    const category = categorizeBP(record.averageSys, record.averageDia);
-                    const referralLabels = {
-                        'maja': 'Maja.no',
-                        'self': 'Eget initiativ',
-                        'doctor': 'Lege',
-                        'other': 'Annet'
-                    };
-                    
-                    return `
-                        <tr>
-                            <td>${formatDate(record.measurementDate)}</td>
-                            <td>${record.patientId}</td>
-                            <td>${record.patientAge}</td>
-                            <td>${record.averageSys}/${record.averageDia}</td>
-                            <td><span class="pressure-status ${category.class}">${category.label}</span></td>
-                            <td>${referralLabels[record.referralSource] || record.referralSource}</td>
-                        </tr>
-                    `;
-                }).join('');
+                // Load recent measurements
+                fetch('api/blood_pressure.php?action=list&limit=10')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const recentTable = document.querySelector('#recentMeasurements tbody');
+                        const measurements = result.data;
+                        
+                        recentTable.innerHTML = measurements.map(record => {
+                            const category = categorizeBP(record.averageSys, record.averageDia);
+                            const referralLabels = {
+                                'maja': 'Maja.no',
+                                'self': 'Eget initiativ',
+                                'doctor': 'Lege',
+                                'other': 'Annet'
+                            };
+                            
+                            return `
+                                <tr>
+                                    <td>${formatDate(record.measurementDate)}</td>
+                                    <td>${record.patientId}</td>
+                                    <td>${record.patientAge}</td>
+                                    <td>${record.averageSys}/${record.averageDia}</td>
+                                    <td><span class="pressure-status ${category.class}">${category.label}</span></td>
+                                    <td>${referralLabels[record.referralSource] || record.referralSource}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading recent measurements:', error);
+                });
             }
 
-            // Admin: Load records table
+            // Admin: Load records table with database integration
             function loadRecordsTable() {
                 const tbody = document.querySelector('#recordsTable tbody');
                 const loader = document.getElementById('recordsLoader');
                 
                 loader.style.display = 'block';
                 
-                setTimeout(() => {
+                fetch('api/blood_pressure.php?action=list&limit=50')
+                .then(response => response.json())
+                .then(result => {
                     loader.style.display = 'none';
-                    displayRecords(bpRecords);
-                }, 500);
+                    if (result.success) {
+                        displayRecords(result.data);
+                    } else {
+                        showAlert('Kunne ikke laste registreringer', 'error');
+                    }
+                })
+                .catch(error => {
+                    loader.style.display = 'none';
+                    console.error('Error loading records:', error);
+                    showAlert('Nettverksfeil ved lasting av registreringer', 'error');
+                });
             }
 
             function displayRecords(records) {
@@ -457,27 +524,52 @@
                 displayRecords(filteredRecords);
             });
 
-            // Global functions for record actions
+            // Global functions for record actions with database integration
             window.viewRecord = function(recordId) {
-                const record = bpRecords.find(r => r.id === recordId);
-                if (!record) {
-                    showAlert('Registrering ikke funnet', 'error');
-                    return;
-                }
-                alert(`Detaljer for registrering ${record.patientId}\n` +
-                      `Blodtrykk: ${record.averageSys}/${record.averageDia} mmHg\n` +
-                      `Dato: ${formatDate(record.measurementDate)}\n` +
-                      `Kilde: ${record.referralSource}`);
+                fetch(`api/blood_pressure.php?action=get&id=${recordId}`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const record = result.data;
+                        alert(`Detaljer for registrering ${record.patient_id}\n` +
+                              `Blodtrykk: ${record.average_sys}/${record.average_dia} mmHg\n` +
+                              `Dato: ${formatDate(record.measurement_date)}\n` +
+                              `Kilde: ${record.referral_source}\n` +
+                              `Utstyr: ${record.equipment}\n` +
+                              `Arm: ${record.arm_used}`);
+                    } else {
+                        showAlert('Kunne ikke finne registrering', 'error');
+                    }
+                })
+                .catch(error => {
+                    showAlert('Nettverksfeil ved lasting av registrering', 'error');
+                });
             };
 
             window.deleteRecord = function(recordId) {
                 if (confirm('Er du sikker på at du vil slette denne registreringen?')) {
-                    const index = bpRecords.findIndex(r => r.id === recordId);
-                    if (index !== -1) {
-                        bpRecords.splice(index, 1);
-                        showAlert('Registrering slettet');
-                        loadRecordsTable();
-                    }
+                    fetch('api/blood_pressure.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'delete',
+                            id: recordId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            showAlert('Registrering slettet');
+                            loadRecordsTable();
+                        } else {
+                            showAlert(`Feil ved sletting: ${result.message}`, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showAlert('Nettverksfeil ved sletting', 'error');
+                    });
                 }
             };
 
