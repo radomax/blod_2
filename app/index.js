@@ -5,8 +5,8 @@ let currentUser = null;
 // Blood pressure categories
 const bpCategories = {
     normal: { min: [0, 0], max: [130, 85], label: "Normalt", class: "pressure-normal" },
-    highNormal: { min: [130, 85], max: [140, 90], label: "Høyt normalt", class: "pressure-high-normal" },
-    high: { min: [140, 90], max: [180, 110], label: "Forhøyet", class: "pressure-high" },
+    highNormal: { min: [130, 85], max: [139, 89], label: "Høyt normalt", class: "pressure-high-normal" },
+    high: { min: [140, 90], max: [179, 109], label: "Forhøyet", class: "pressure-high" },
     veryHigh: { min: [180, 110], max: [300, 200], label: "Alvorlig forhøyet", class: "pressure-very-high" }
 };
 
@@ -37,13 +37,15 @@ function formatTime(timeString) {
 }
 
 function categorizeBP(sys, dia) {
-    for (const [key, category] of Object.entries(bpCategories)) {
-        if (sys >= category.min[0] && dia >= category.min[1] && 
-            sys < category.max[0] && dia < category.max[1]) {
-            return { key, ...category };
-        }
+    if (sys < 130 && dia < 85) {
+        return { key: 'normal', ...bpCategories.normal };
+    } else if ((sys >= 130 && sys <= 139) || (dia >= 85 && dia <= 89)) {
+        return { key: 'highNormal', ...bpCategories.highNormal };
+    } else if ((sys >= 140 && sys <= 179) || (dia >= 90 && dia <= 109)) {
+        return { key: 'high', ...bpCategories.high };
+    } else {
+        return { key: 'veryHigh', ...bpCategories.veryHigh };
     }
-    return { key: 'veryHigh', ...bpCategories.veryHigh };
 }
 
 // Event listeners
