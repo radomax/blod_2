@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blodtrykksmålinger - Støtteverktøy</title>
+    <title>Blodtrykksmålinger - Registreringssystem</title>
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
     <header>
         <div class="container">
-            <div class="logo">Blodtrykksmålinger - Støtteverktøy</div>
+            <div class="logo">Blodtrykksmålinger - Registreringssystem</div>
             <nav>
                 <ul>
                     <li><a href="#" class="nav-link active" data-target="register">Registrering</a></li>
@@ -75,11 +75,56 @@
             
             <div class="card">
                 <form id="bpForm">
-                                    
+                    <div class="form-group">
+                        <h2>Pasientinformasjon</h2>
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="patientId">Pasient ID</label>
+                                <input type="text" id="patientId" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientAge">Alder</label>
+                                <input type="number" id="patientAge" min="0" max="120" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientGender">Kjønn</label>
+                                <select id="patientGender" required>
+                                    <option value="">Velg</option>
+                                    <option value="male">Mann</option>
+                                    <option value="female">Kvinne</option>
+                                    <option value="other">Annet</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="form-group">
-                        <!-- <h3>Blodtrykksmålinger</h3> -->
-                         <h3>a. Blodtrykksverdien (snitt av de to siste målingene).</h3>
+                        <h2>Målinginformasjon</h2>
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="measurementDate">Målingsdato</label>
+                                <input type="date" id="measurementDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="measurementTime">Tidspunkt</label>
+                                <input type="time" id="measurementTime" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="referralSource">Henvendelse fra</label>
+                        <select id="referralSource" required>
+                            <option value="">Velg</option>
+                            <option value="maja">Maja.no</option>
+                            <option value="self">Eget initiativ</option>
+                            <option value="doctor">Lege</option>
+                            <option value="other">Annet</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <h3>Blodtrykksmålinger</h3>
                         <div class="input-group">
                             <div class="form-group">
                                 <label for="measurement1Sys">Måling 1 - Systolisk</label>
@@ -117,105 +162,9 @@
                         </div>
                     </div>
 
-
-                    
-
                     <div class="form-group">
-                        <!-- <h3>Måleutstyr og metode</h3> -->
-                        <h3>b.   </h3>
+                        <h3>Måleutstyr og metode</h3>
                         <div class="input-group">
-                           
-                            
-                            <div class="form-group">
-                                <!-- <label for="armUsed">Arm brukt for måling</label> -->
-
-                                <!-- <label for="armUsed">b. Velg venstre eller høyre arm, med å ta bort et av de to valgene.</label> -->
-                                <select id="armUsed" required>
-                                    <option value="">Velg venstre eller høyre arm, med å ta bort et av de to valgene.</option>
-                                    <option value="left">Venstre</option>
-                                    <option value="right">Høyre</option>
-                                </select>
-                            </div>
-
-
-                            <h3>c. Mansjettstørrelse  </h3>
-
-
-                            <div class="form-group">
-                                <!-- <label for="cuffSize">Mansjettstørrelse</label> -->
-
-                                <!-- <label for="cuffSize">c. Mansjettstørrelse</label> -->
-
-                                <select id="cuffSize">
-                                    <option value="S">S (17-22 cm)</option>
-                                    <option value="M/L">M/L (22-42 cm)</option>
-                                    <option value="L/XL">L/XL (32-52 cm)</option>
-                                </select>
-                            </div>
-                            
-
-                            
-                        </div>
-                    </div>
-                   
-
-
-
-                    <div class="form-group">
-                        <!-- <label for="notes">Tilleggsnotater</label> -->
-                        
-                        <!-- <label for="notes">d. Fjern tekst som IKKE skal formidles til kunden basert på måleresultatet. Kun et av alternativene skal stå igjen.         
-                        </label> -->
-
-                        <h3> d. Fjern tekst som IKKE skal formidles til kunden basert på måleresultatet. Kun et av alternativene skal stå igjen.    </h3>
-                        <textarea id="notes" rows="3" placeholder="Eventuelle observasjoner eller kommentarer"></textarea>
-                    </div>
-
-
-
-                    
-
-
-
-                    <br><hr><br>
-
-                    <div class="form-group">
-                        <h2>Pasient- og utstyrinformasjon</h2>
-                        <div class="input-group">
-                            
-                            <div class="form-group">
-                                <label for="patientAge">Alder</label>
-                                <input type="number" id="patientAge" min="0" max="120" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="patientGender">Kjønn</label>
-                                <select id="patientGender" required>
-                                    <option value="">Velg</option>
-                                    <option value="male">Mann</option>
-                                    <option value="female">Kvinne</option>
-                                    <option value="other">Annet</option>
-                                </select>
-                            </div>
-
-
-                            <div class="form-group">
-                                <label for="referralSource">Henvendelse fra</label>
-                                <select id="referralSource" required>
-                                    <option value="">Velg</option>
-                                    <option value="maja">Maja.no</option>
-                                    <option value="self">Eget initiativ</option>
-                                    <option value="doctor">Lege</option>
-                                    <option value="other">Annet</option>
-                                </select>
-                        
-                            </div>
-
-
-                            <div class="form-group">
-                                <label for="patientId">Området:</label>
-                                <input type="text" id="patientId" required>
-                            </div>
-
                             <div class="form-group">
                                 <label for="equipment">Blodtrykksapparat</label>
                                 <select id="equipment">
@@ -224,39 +173,34 @@
                                     <option value="llp-bt">LLP BT-måler 22-42 cm</option>
                                 </select>
                             </div>
+                            <div class="form-group">
+                                <label for="cuffSize">Mansjettstørrelse</label>
+                                <select id="cuffSize">
+                                    <option value="S">S (17-22 cm)</option>
+                                    <option value="M/L">M/L (22-42 cm)</option>
+                                    <option value="L/XL">L/XL (32-52 cm)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="armUsed">Arm brukt for måling</label>
+                                <select id="armUsed" required>
+                                    <option value="">Velg</option>
+                                    <option value="left">Venstre</option>
+                                    <option value="right">Høyre</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
-
 
                     <div class="form-group">
-                        <h2>Målinginformasjon</h2>
-                        <div class="input-group">
-                            <div class="form-group">
-                                <label for="measurementDate">Målingsdato</label>
-                                <input type="date" id="measurementDate" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="measurementTime">Tidspunkt</label>
-                                <input type="time" id="measurementTime" required>
-                            </div>
-                        </div>
+                        <label for="notes">Tilleggsnotater</label>
+                        <textarea id="notes" rows="3" placeholder="Eventuelle observasjoner eller kommentarer"></textarea>
                     </div>
-
-                    
-
                     
                     <div class="form-group">
                         <button type="submit" class="btn btn-success" id="saveBtn">Lagre måling</button>
                         <button type="reset" class="btn btn-secondary">Nullstill skjema</button>
                     </div>
-
-
-                 
-
-                
-
-
-
                 </form>
             </div>
         </section>
