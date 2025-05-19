@@ -55,3 +55,36 @@ Systemet genererer automatisk testdata hvis databasen er tom.
 2. Opprett database og kjør schema
 3. Sett korrekte database-tilkoblingsdetaljer
 4. Sørg for at PHP har PDO MySQL-støtte
+
+
+
+const sampleData = {
+    patientId: 'P' + Math.floor(Math.random() * 9999 + 1000),
+    patientAge: Math.floor(Math.random() * 50 + 30),
+    patientGender: ['male', 'female'][Math.floor(Math.random() * 2)],
+    measurementDate: new Date().toISOString().split('T')[0],
+    measurementTime: new Date().toLocaleTimeString('en-US', {hour12: false, hour: '2-digit', minute: '2-digit'}),
+    referralSource: ['maja', 'self', 'doctor'][Math.floor(Math.random() * 3)],
+    measurement1Sys: Math.floor(Math.random() * 40 + 120),
+    measurement1Dia: Math.floor(Math.random() * 20 + 70),
+    measurement2Sys: Math.floor(Math.random() * 40 + 120),
+    measurement2Dia: Math.floor(Math.random() * 20 + 70),
+    measurement3Sys: Math.floor(Math.random() * 40 + 120),
+    measurement3Dia: Math.floor(Math.random() * 20 + 70),
+    equipment: ['microlife-b2', 'microlife-b6', 'llp-bt'][Math.floor(Math.random() * 3)],
+    cuffSize: ['S', 'M/L', 'L/XL'][Math.floor(Math.random() * 3)],
+    armUsed: ['left', 'right'][Math.floor(Math.random() * 2)],
+    notes: 'Test måling generert automatisk'
+};
+
+// Fill the form
+Object.keys(sampleData).forEach(key => {
+    const element = document.getElementById(key);
+    if (element) {
+        element.value = sampleData[key];
+        // Trigger change event to calculate average
+        element.dispatchEvent(new Event('input'));
+    }
+});
+
+console.log('Form filled with sample data:', sampleData);

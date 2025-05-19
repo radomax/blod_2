@@ -1,3 +1,30 @@
+<?php
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
+// Database configuration
+$host = 'db';  // Docker service name
+$dbname = 'blood_pressure_db';
+$username = 'root';
+$password = 'rotpassord';
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    error_log("Database connection failed: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
+    exit;
+}
+
 // Get request data
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? $_GET['action'] ?? '';
