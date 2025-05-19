@@ -377,37 +377,70 @@
 
             // Statistics with database integration
             function updateStatistics() {
-                // Get data from database
-                fetch('api/blood_pressure.php?action=statistics')
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        const stats = result.data;
-                        const statsCards = document.getElementById('statsCards');
-                        
-                        const highBPPercentage = stats.total > 0 ? 
-                            Math.round((stats.highBP / stats.total) * 100) : 0;
+    if (bpRecords.length === 0) {
+        generateSampleData();
+    }
 
-                        // Update stats cards
-                        statsCards.innerHTML = `
-                            <div class="stats-card">
-                                <span class="stats-number">${stats.total}</span>
-                                <span class="stats-label">Totale målinger</span>
-                            </div>
-                            <div class="stats-card">
-                                <span class="stats-number">${stats.today}</span>
-                                <span class="stats-label">Målinger i dag</span>
-                            </div>
-                            <div class="stats-card">
-                                <span class="stats-number">${highBPPercentage}%</span>
-                                <span class="stats-label">Forhøyet blodtrykk</span>
-                            </div>
-                            <div class="stats-card">
-                                <span class="stats-number">${stats.avgAge} år</span>
-                                <span class="stats-label">Gjennomsnittsalder</span>
-                            </div>
-                        `;
-                    }
+    const statsCards = document.getElementById('statsCards');
+    const recentTable = document.querySelector('#recentMeasurements tbody');
+    
+    // Calculate statistics from local data
+    const totalMeasurements = bpRecords.length;
+    const today = new Date().toISOString().split('T')[0];
+    const todayMeasurements = bpRecords.filter(r => r.measurementDate === today).length;
+    
+    const highBPCount = bpRecords.filter(record => {
+        const category = categorizeBP(record.averageSys, record.averageDia);
+        return category.key === 'high' || category.key === 'veryHigh';
+    }).length;
+    
+    const highBPPercentage = totalMeasurements > 0 ? Math.round((highBPCount / totalMeasurements) * 100) : 0;
+    const avgAge = totalMeasurements > 0 ? 
+        Math.round(bpRecords.reduce((sum, r) => sum + r.patientAge, 0) / totalMeasurements) : 0;
+
+    // Update stats cards
+    statsCards.innerHTML = `
+        <div class="stats-card">
+            <span class="stats-number">${totalMeasurements}</span>
+            <span class="stats-label">Totale målinger</span>
+        </div>
+        <div class="stats-card">
+            <span class="stats-number">${todayMeasurements}</span>
+            <span class="stats-label">Målinger i dag</span>
+        </div>
+        <div class="stats-card">
+            <span class="stats-number">${highBPPercentage}%</span>
+            <span class="stats-label">Forhøyet blodtrykk</span>
+        </div>
+        <div class="stats-card">
+            <span class="stats-number">${avgAge} år</span>
+            <span class="stats-label">Gjennomsnittsalder</span>
+        </div>
+    `;
+
+    // Update recent measurements table (local data)
+    const recentRecords = bpRecords.slice(-10).reverse();
+    recentTable.innerHTML = recentRecords.map(record => {
+        const category = categorizeBP(record.averageSys, record.averageDia);
+        const referralLabels = {
+            'maja': 'Maja.no',
+            'self': 'Eget initiativ',
+            'doctor': 'Lege',
+            'other': 'Annet'
+        };
+        
+        return `
+            <tr>
+                <td>${formatDate(record.measurementDate)}</td>
+                <td>${record.patientId}</td>
+                <td>${record.patientAge}</td>
+                <td>${record.averageSys}/${record.averageDia}</td>
+                <td><span class="pressure-status ${category.class}">${category.label}</span></td>
+                <td>${referralLabels[record.referralSource] || record.referralSource}</td>
+            </tr>
+        `;
+    }).join('');
+}
                 })
                 .catch(error => {
                     console.error('Error loading statistics:', error);

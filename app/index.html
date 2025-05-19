@@ -374,9 +374,24 @@
                 <p>&copy; 2025 Blodtrykksmålinger. Alle rettigheter forbeholdt.</p>
             </div>
         </div>
+    </footer>
 
     <script src="index.js"></script>
-    </footer>
+
+
+    <script>
+// Ensure DOM is loaded before running JavaScript
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+}
+
+function initializeApp() {
+    // Move all your existing JavaScript code inside this function
+    // This ensures all elements exist before trying to access them
+}
+</script>
 
 </body>
 </html>
