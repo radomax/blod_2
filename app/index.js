@@ -37,14 +37,15 @@ function formatTime(timeString) {
 }
 
 function categorizeBP(sys, dia) {
-    if (sys < 130 && dia < 85) {
-        return { key: 'normal', ...bpCategories.normal };
-    } else if ((sys >= 130 && sys <= 139) || (dia >= 85 && dia <= 89)) {
-        return { key: 'highNormal', ...bpCategories.highNormal };
-    } else if ((sys >= 140 && sys <= 179) || (dia >= 90 && dia <= 109)) {
-        return { key: 'high', ...bpCategories.high };
-    } else {
+    // Classify based on the HIGHEST reading
+    if (sys >= 180 || dia >= 110) {
         return { key: 'veryHigh', ...bpCategories.veryHigh };
+    } else if (sys >= 140 || dia >= 90) {
+        return { key: 'high', ...bpCategories.high };
+    } else if (sys >= 130 || dia >= 85) {
+        return { key: 'highNormal', ...bpCategories.highNormal };
+    } else {
+        return { key: 'normal', ...bpCategories.normal };
     }
 }
 
