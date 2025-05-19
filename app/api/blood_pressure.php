@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // Database configuration
 $host = 'db';  // Docker service name
-$dbname = 'blood_pressure_db';
+$dbname = 'blodtrykk';
 $username = 'root';
 $password = 'rotpassord';
 
