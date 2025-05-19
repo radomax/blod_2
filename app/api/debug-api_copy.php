@@ -19,7 +19,7 @@ $response = [
 // Legg til databasetilkobling for mer omfattende tester
 if (isset($_GET["action"]) && $_GET["action"] == "showTables") {
     try {
-        $db = new PDO("mysql:host=db;dbname=mortalitet;charset=utf8mb4", "mortalitetbruker", "mortalitetpassord");
+        $db = new PDO("mysql:host=db;dbname=blodtrykk;charset=utf8mb4", "rado", "2505");
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         
         // Hent alle tabeller
@@ -51,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET["action"]) && $_GET["ac
         }
         
         try {
-            $db = new PDO("mysql:host=db;dbname=mortalitet;charset=utf8mb4", "mortalitetbruker", "mortalitetpassord");
+            $db = new PDO("mysql:host=db;dbname=blodtrykk;charset=utf8mb4", "rado", "2505");
             $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             
             // Start en transaksjon
@@ -152,7 +152,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_GET["action"]) && $_GET["ac
 // Hent registreringer
 if (isset($_GET["action"]) && $_GET["action"] == "getRecords") {
     try {
-        $db = new PDO("mysql:host=db;dbname=mortalitet;charset=utf8mb4", "mortalitetbruker", "mortalitetpassord");
+        $db = new PDO("mysql:host=db;dbname=blodtrykk;charset=utf8mb4", "rado", "2505");
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         
         $query = "

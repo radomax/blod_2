@@ -1,6 +1,6 @@
 <?php
 /**
- * Debug API for Mortalitet Application
+ * Debug API for blodtrykk Application
  * 
  * Denne filen fungerer som en mellommann mellom frontend og backend
  * og logger alle API-forespørsler for feilsøking.
@@ -59,9 +59,9 @@ debug_log("Innkommende {$_SERVER['REQUEST_METHOD']}-forespørsel til {$_SERVER['
 // Hent databasetilkobling
 function getDbConnection() {
     $host = 'db'; // Container-navn i Docker
-    $dbname = 'mortalitet';
-    $username = 'mortalitetbruker';
-    $password = 'mortalitetpassord';
+    $dbname = 'blodtrykk'; // Databasenavn i Docker-compose
+    $username = 'rado';
+    $password = '2505'; // Passord for root-bruker i Docker-compose
     
     try {
         $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);

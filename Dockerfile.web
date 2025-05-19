@@ -25,8 +25,8 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
     && sed -i 's/;opcache.memory_consumption=128/opcache.memory_consumption=256/g' "$PHP_INI_DIR/php.ini"
 
 # Opprett loggkatalog og sett tillatelser
-RUN mkdir -p /var/log/mortalitet \
-    && chown -R www-data:www-data /var/log/mortalitet
+RUN mkdir -p /var/log/blodtrykk \
+    && chown -R www-data:www-data /var/log/blodtrykk
 
 # Konfigurer Apache
 COPY apache-config.conf /etc/apache2/sites-available/000-default.conf

@@ -48,6 +48,8 @@ services:
     environment:
       - PMA_HOST=db
       - PMA_PORT=3306
+      - PMA_USER=rado
+      - PMA_PASSWORD=2505
       - MYSQL_ROOT_PASSWORD=rotpassord
     depends_on:
       - db

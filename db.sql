@@ -1,9 +1,6 @@
--- Database schema for blood pressure measurements system
+CREATE DATABASE IF NOT EXISTS blodtrykk CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-
-CREATE DATABASE IF NOT EXISTS blood_pressure_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-USE blood_pressure_db;
+USE blodtrykk;
 
 -- Table for storing blood pressure measurements
 CREATE TABLE blood_pressure_measurements (

@@ -9,11 +9,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-// Database configuration
-$host = 'db';  // Docker service name
-$dbname = 'blood_pressure_db';
-$username = 'root';
-$password = 'rotpassord';
+// Database configuration - Use environment variables or defaults
+$host = $_ENV['DB_HOST'] ?? 'db';
+$dbname = $_ENV['DB_NAME'] ?? 'blodtrykk';
+$username = $_ENV['DB_USER'] ?? 'root';
+$password = $_ENV['DB_PASS'] ?? 'rotpassord';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
@@ -21,7 +21,7 @@ try {
 } catch (PDOException $e) {
     error_log("Database connection failed: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
+    echo json_encode(['success' => false, 'message' => 'Database connection failed: ' . $e->getMessage()]);
     exit;
 }
 
