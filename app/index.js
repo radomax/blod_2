@@ -194,12 +194,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('pressureCategory').innerHTML = 
                 `<span class="pressure-status ${category.class}">${category.label}</span>`;
             
-            // Show recommendation based on category
+            // Show recommendation based on category (Norwegian pharmacy guidelines)
             const recommendations = {
-                normal: "Normalt blodtrykk. Fortsett med sunt livsstil.",
-                highNormal: "Høyt normalt blodtrykk. Vurder livsstilsendringer.",
-                high: "Forhøyet blodtrykk. Det anbefales å konsultere lege.",
-                veryHigh: "Alvorlig forhøyet blodtrykk. Kontakt lege/legevakt umiddelbart."
+                normal: "Denne målingen viser til et normalt blodtrykk. Basert på denne målingen alene gis det ikke råd om å konsultere lege.",
+                highNormal: "Denne målingen viser til et «høyt normalt» blodtrykk og økt risiko for å utvikle høyt blodtrykk. Ofte tilstrekkelig å endre til et sunnere kosthold og aktivitetsnivå for å holde blodtrykket stabilt. Basert på denne målingen alene, gis det ikke råd om å konsultere lege.",
+                high: "Denne målingen er forhøyet. Basert på denne målingen alene, gis det råd om å konsultere lege.",
+                veryHigh: "Blodtrykket er alvorlig forhøyet, kunden anbefales å oppsøke lege/legevakt umiddelbart."
             };
             
             document.getElementById('pressureCategory').innerHTML += 
