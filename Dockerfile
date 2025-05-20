@@ -1,44 +1,28 @@
-FROM php:8.0-apache
+FROM php:8.2-apache
 
-# Installer PHP-utvidelser som er nødvendige for applikasjonen
-RUN apt-get update && apt-get install -y \
-    libicu-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    && docker-php-ext-install -j$(nproc) \
-    intl \
-    pdo_mysql \
-    mysqli \
-    zip
+# Install PHP extensions
+RUN docker-php-ext-install mysqli pdo pdo_mysql
+RUN a2enmod rewrite
 
-# Aktiver Apache-moduler
-RUN a2enmod rewrite headers
+# Set up Apache to allow access
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf && \
+    echo "<Directory /var/www/html>" >> /etc/apache2/apache2.conf && \
+    echo "    Options Indexes FollowSymLinks" >> /etc/apache2/apache2.conf && \
+    echo "    AllowOverride All" >> /etc/apache2/apache2.conf && \
+    echo "    Require all granted" >> /etc/apache2/apache2.conf && \
+    echo "</Directory>" >> /etc/apache2/apache2.conf
 
-# Konfigurer PHP
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
-    && sed -i 's/;date.timezone =/date.timezone = Europe\/Oslo/g' "$PHP_INI_DIR/php.ini" \
-    && sed -i 's/memory_limit = 128M/memory_limit = 256M/g' "$PHP_INI_DIR/php.ini" \
-    && sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 20M/g' "$PHP_INI_DIR/php.ini" \
-    && sed -i 's/post_max_size = 8M/post_max_size = 20M/g' "$PHP_INI_DIR/php.ini" \
-    && sed -i 's/;opcache.enable=1/opcache.enable=1/g' "$PHP_INI_DIR/php.ini" \
-    && sed -i 's/;opcache.memory_consumption=128/opcache.memory_consumption=256/g' "$PHP_INI_DIR/php.ini"
+# Copy application files
+COPY app/ /var/www/html/
 
-# Opprett loggkatalog og sett tillatelser
-RUN mkdir -p /var/log/mortalitet \
-    && chown -R www-data:www-data /var/log/mortalitet
+# Create index.html if missing
+RUN if [ ! -f /var/www/html/index.html ]; then \
+    echo '<html><body><h1>Blood Pressure App</h1><p>Successfully deployed on Railway!</p></body></html>' > /var/www/html/index.html; \
+    fi
 
-# Konfigurer Apache
-COPY apache-config.conf /etc/apache2/sites-available/000-default.conf
+# Fix permissions
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod -R 755 /var/www/html
 
-# Gi rettigheter til Apache-brukeren
-RUN chown -R www-data:www-data /var/www/html
-
-# Sett arbeidsmappe
-WORKDIR /var/www/html
-
-# Eksponer port
 EXPOSE 80
-
-# Start Apache ved oppstart
 CMD ["apache2-foreground"]
