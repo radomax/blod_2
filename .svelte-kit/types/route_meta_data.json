@@ -1,0 +1,6 @@
+{
+	"/": [],
+	"/api/blood-pressure": [
+		"src/routes/api/blood-pressure/+server.js"
+	]
+}

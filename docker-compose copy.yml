@@ -1,0 +1,64 @@
+services:
+  # Webserver for blodtrykksmåling
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: blodtrykk-web
+    ports:
+      - "3023:80"
+    volumes:
+      - ./app:/var/www/html
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=blodtrykk
+      - DB_USER=rado
+      - DB_PASS=2505
+    networks:
+      - blodtrykk-network
+    restart: unless-stopped
+
+  # MySQL Database for blodtrykksmålinger
+  db:
+    image: mysql:8.0
+    container_name: blodtrykk-db
+    ports:
+      - "13314:3306"
+    volumes:
+      - ./db-data:/var/lib/mysql
+      - ./database_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    environment:
+      - MYSQL_ROOT_PASSWORD=rotpassord
+      - MYSQL_DATABASE=blodtrykk
+      - MYSQL_USER=rado
+      - MYSQL_PASSWORD=2505
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - blodtrykk-network
+    restart: unless-stopped
+
+  # phpMyAdmin for databaseadministrasjon
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: blodtrykk-phpmyadmin
+    ports:
+      - "3024:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+      - MYSQL_ROOT_PASSWORD=rotpassord
+    depends_on:
+      - db
+    networks:
+      - blodtrykk-network
+    restart: unless-stopped
+
+networks:
+  blodtrykk-network:
+    driver: bridge
+
+volumes:
+  db-data:
+    driver: local

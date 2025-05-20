@@ -1,21 +1,21 @@
 services:
-  # Webserver for blodtrykksmåling
+  # Svelte web application
   web:
     build:
       context: .
-      dockerfile: Dockerfile.web
-    container_name: blodtrykk-web
+      dockerfile: Dockerfile
+    container_name: blodtrykk-svelte
     ports:
-      - "3023:80"
-    volumes:
-      - ./app:/var/www/html
-    depends_on:
-      - db
+      - "3023:3023"
     environment:
+      - NODE_ENV=production
       - DB_HOST=db
       - DB_NAME=blodtrykk
       - DB_USER=rado
-      - DB_PASS=2505
+      - DB_PASSWORD=2505
+      - DB_PORT=3306
+    depends_on:
+      - db
     networks:
       - blodtrykk-network
     restart: unless-stopped
@@ -39,7 +39,7 @@ services:
       - blodtrykk-network
     restart: unless-stopped
 
-  # phpMyAdmin for databaseadministrasjon
+  # phpMyAdmin for database administration
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: blodtrykk-phpmyadmin
