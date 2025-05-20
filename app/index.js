@@ -199,10 +199,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Show recommendation based on category
             const recommendations = {
-                normal: "Normalt blodtrykk. Fortsett med sunt livsstil.",
-                highNormal: "Høyt normalt blodtrykk. Vurder livsstilsendringer.",
-                high: "Forhøyet blodtrykk. Det anbefales å konsultere lege.",
-                veryHigh: "Alvorlig forhøyet blodtrykk. Kontakt lege/legevakt umiddelbart."
+                normal: "Normalt blodtrykk. Fortsett med sunt livsstil. <br><br> Blodtrykk under 130 (systolisk) og under 85 (diastolisk).",
+                highNormal: "Høyt normalt blodtrykk. Vurder livsstilsendringer. <br><br> Blodtrykk mellom 130-139 (systolisk) og mellom 85-89 (diastolisk)",
+                high: "Forhøyet blodtrykk. Det anbefales å konsultere lege. <br><br> Blodtrykk mellom 140-179 (systolisk) og mellom 90-109 (diastolisk)",
+                veryHigh: "Alvorlig forhøyet blodtrykk. Kontakt lege/legevakt umiddelbart. <br><br> Blodtrykk over 180 (systolisk) eller over 110 (diastolisk)"
             };
             
             document.getElementById('pressureCategory').innerHTML += 
