@@ -9,37 +9,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-// Railway database connection - get from environment variables
-$host = $_ENV['MYSQLHOST'] ?? 'localhost';
-$port = $_ENV['MYSQLPORT'] ?? '3306';
-$dbname = $_ENV['MYSQLDATABASE'] ?? 'railway';
-$username = $_ENV['MYSQLUSER'] ?? 'root';
-$password = $_ENV['MYSQLPASSWORD'] ?? '';
-
-try {
-    $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
-    $pdo = new PDO($dsn, $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    // Test connection
-    if (isset($_GET['test'])) {
-        echo json_encode([
-            'success' => true,
-            'message' => 'Connected to Railway MySQL!',
-            'database' => $dbname,
-            'host' => $host
-        ]);
-        exit;
+// Database configuration with Railway support
+function getDatabaseConfig() {
+    // Check if we have a MYSQL_URL from Railway
+    if (isset($_ENV['MYSQL_URL']) && !empty($_ENV['MYSQL_URL'])) {
+        $url = parse_url($_ENV['MYSQL_URL']);
+        return [
+            'host' => $url['host'],
+            'port' => $url['port'] ?? 3306,
+            'dbname' => ltrim($url['path'], '/'),
+            'username' => $url['user'],
+            'password' => $url['pass']
+        ];
     }
     
+    // Fall back to individual environment variables or defaults
+    return [
+        'host' => $_ENV['DB_HOST'] ?? $_ENV['MYSQLHOST'] ?? 'localhost',
+        'port' => $_ENV['DB_PORT'] ?? $_ENV['MYSQLPORT'] ?? 3306,
+        'dbname' => $_ENV['DB_NAME'] ?? $_ENV['MYSQLDATABASE'] ?? 'blodtrykk',
+        'username' => $_ENV['DB_USER'] ?? $_ENV['MYSQLUSER'] ?? 'root',
+        'password' => $_ENV['DB_PASS'] ?? $_ENV['MYSQLPASSWORD'] ?? ''
+    ];
+}
+
+try {
+    $config = getDatabaseConfig();
+    $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['dbname']};charset=utf8mb4";
+    $pdo = new PDO($dsn, $config['username'], $config['password']);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
     error_log("Database connection failed: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Database connection failed',
-        'error' => $e->getMessage()
-    ]);
+    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
     exit;
 }
 
@@ -154,41 +156,6 @@ try {
             ]);
             break;
             
-        case 'get':
-            $id = $_GET['id'] ?? $input['id'] ?? null;
-            if (!$id) {
-                throw new Exception('Measurement ID required');
-            }
-            
-            $stmt = $pdo->prepare("SELECT * FROM blood_pressure_measurements WHERE id = :id");
-            $stmt->execute([':id' => $id]);
-            $measurement = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if (!$measurement) {
-                throw new Exception('Measurement not found');
-            }
-            
-            echo json_encode([
-                'success' => true,
-                'data' => $measurement
-            ]);
-            break;
-            
-        case 'delete':
-            $id = $input['id'] ?? null;
-            if (!$id) {
-                throw new Exception('Measurement ID required');
-            }
-            
-            $stmt = $pdo->prepare("DELETE FROM blood_pressure_measurements WHERE id = :id");
-            $stmt->execute([':id' => $id]);
-            
-            echo json_encode([
-                'success' => true,
-                'message' => 'Measurement deleted successfully'
-            ]);
-            break;
-            
         case 'statistics':
             // Total measurements
             $stmt = $pdo->query("SELECT COUNT(*) as total FROM blood_pressure_measurements");
@@ -217,86 +184,15 @@ try {
                 ]
             ]);
             break;
-        
-        
-
-
-
             
-
-
-        case 'setup':
-            // Database setup via API
-            try {
-                // Create blood_pressure_measurements table
-                $sql = "CREATE TABLE IF NOT EXISTS blood_pressure_measurements (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    patient_id VARCHAR(100) NOT NULL,
-                    patient_age INT,
-                    patient_gender ENUM('male', 'female', 'other'),
-                    measurement_date DATE NOT NULL,
-                    measurement_time TIME,
-                    referral_source ENUM('maja', 'self', 'doctor', 'other') DEFAULT 'other',
-                    measurement1_sys INT,
-                    measurement1_dia INT,
-                    measurement2_sys INT NOT NULL,
-                    measurement2_dia INT NOT NULL,
-                    measurement3_sys INT NOT NULL,
-                    measurement3_dia INT NOT NULL,
-                    average_sys INT NOT NULL,
-                    average_dia INT NOT NULL,
-                    equipment VARCHAR(100),
-                    cuff_size ENUM('S', 'M/L', 'L/XL') DEFAULT 'M/L',
-                    arm_used ENUM('left', 'right') NOT NULL,
-                    notes TEXT,
-                    registered_by VARCHAR(100),
-                    registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )";
-                $pdo->exec($sql);
-
-                // Create users table
-                $sql = "CREATE TABLE IF NOT EXISTS users (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    username VARCHAR(50) UNIQUE NOT NULL,
-                    password_hash VARCHAR(255) NOT NULL,
-                    role ENUM('admin', 'user') DEFAULT 'user',
-                    full_name VARCHAR(100),
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )";
-                $pdo->exec($sql);
-
-                // Insert default admin user
-                $adminHash = password_hash('admin123', PASSWORD_DEFAULT);
-                $stmt = $pdo->prepare("INSERT IGNORE INTO users (username, password_hash, role, full_name) VALUES (?, ?, ?, ?)");
-                $stmt->execute(['admin', $adminHash, 'admin', 'Administrator']);
-
-                // Insert sample data
-                $stmt = $pdo->prepare("INSERT IGNORE INTO blood_pressure_measurements 
-                    (patient_id, patient_age, patient_gender, measurement_date, measurement_time,
-                     measurement2_sys, measurement2_dia, measurement3_sys, measurement3_dia, 
-                     average_sys, average_dia, arm_used, registered_by) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute(['DEMO001', 45, 'male', '2025-05-20', '10:30:00', 135, 88, 138, 85, 137, 87, 'left', 'System']);
-
-                echo json_encode([
-                    'success' => true,
-                    'message' => 'Database setup completed successfully! 🎉',
-                    'tables_created' => ['blood_pressure_measurements', 'users'],
-                    'sample_data' => 'Demo record added',
-                    'next_steps' => [
-                        'Test API: /api/blood_pressure.php?action=list',
-                        'View data in Railway dashboard'
-                    ]
-                ]);
-
-            } catch (Exception $e) {
-                echo json_encode([
-                    'success' => false,
-                    'error' => $e->getMessage()
-                ]);
-            }
+        case 'health':
+            // Simple health check endpoint
+            echo json_encode([
+                'success' => true,
+                'message' => 'API is healthy',
+                'database' => 'connected'
+            ]);
             break;
-
             
         default:
             throw new Exception('Invalid action');
