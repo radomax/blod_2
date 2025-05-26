@@ -1,8 +1,15 @@
 <?php
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 
-// Railway database connection - add this to your blood_pressure.php
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
 
-// Get Railway database connection details from environment
+// Railway database connection - get from environment variables
 $host = $_ENV['MYSQLHOST'] ?? 'localhost';
 $port = $_ENV['MYSQLPORT'] ?? '3306';
 $dbname = $_ENV['MYSQLDATABASE'] ?? 'railway';
@@ -26,38 +33,13 @@ try {
     }
     
 } catch (PDOException $e) {
-    echo json_encode([
-        'success' => false,
-        'error' => $e->getMessage()
-    ]);
-    exit;
-}
-
-
-
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
-}
-
-// Database configuration
-$host = 'db';  // Docker service name
-$dbname = 'blodtrykk';
-$username = 'root';
-$password = 'rotpassord';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
     error_log("Database connection failed: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Database connection failed',
+        'error' => $e->getMessage()
+    ]);
     exit;
 }
 
@@ -103,7 +85,7 @@ try {
                 ':cuff_size' => $data['cuffSize'],
                 ':arm_used' => $data['armUsed'],
                 ':notes' => $data['notes'],
-                ':registered_by' => 'System' // You can modify this to use actual user
+                ':registered_by' => 'System'
             ]);
             
             echo json_encode([
