@@ -2,6 +2,9 @@
 // Database setup script - save as app/setup_db.php
 
 // Railway database connection
+header('Content-Type: application/json');
+
+// Get Railway database connection
 $host = $_ENV['MYSQLHOST'] ?? 'localhost';
 $port = $_ENV['MYSQLPORT'] ?? '3306';
 $dbname = $_ENV['MYSQLDATABASE'] ?? 'railway';
@@ -9,10 +12,11 @@ $username = $_ENV['MYSQLUSER'] ?? 'root';
 $password = $_ENV['MYSQLPASSWORD'] ?? '';
 
 try {
-    $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4", $username, $password);
+    $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
+    $pdo = new PDO($dsn, $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Create blood pressure measurements table
+    // Create blood_pressure_measurements table
     $sql = "CREATE TABLE IF NOT EXISTS blood_pressure_measurements (
         id INT AUTO_INCREMENT PRIMARY KEY,
         patient_id VARCHAR(100) NOT NULL,
@@ -54,7 +58,7 @@ try {
     $stmt = $pdo->prepare("INSERT IGNORE INTO users (username, password_hash, role, full_name) VALUES (?, ?, ?, ?)");
     $stmt->execute(['admin', $adminHash, 'admin', 'Administrator']);
 
-    // Insert sample blood pressure record
+    // Insert sample data
     $stmt = $pdo->prepare("INSERT IGNORE INTO blood_pressure_measurements 
         (patient_id, patient_age, patient_gender, measurement_date, 
          measurement2_sys, measurement2_dia, measurement3_sys, measurement3_dia, 
@@ -64,15 +68,23 @@ try {
 
     echo json_encode([
         'success' => true,
-        'message' => 'Database setup completed!',
+        'message' => 'Database setup completed successfully!',
         'tables' => ['blood_pressure_measurements', 'users'],
-        'sample_data' => 'Demo record added'
+        'sample_data' => 'Demo record added',
+        'connection_info' => [
+            'host' => $host,
+            'database' => $dbname
+        ]
     ]);
 
 } catch (PDOException $e) {
     echo json_encode([
         'success' => false,
-        'error' => $e->getMessage()
+        'error' => $e->getMessage(),
+        'connection_info' => [
+            'host' => $host,
+            'database' => $dbname
+        ]
     ]);
 }
 ?>
