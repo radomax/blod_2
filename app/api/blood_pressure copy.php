@@ -1,40 +1,4 @@
 <?php
-
-// Railway database connection - add this to your blood_pressure.php
-
-// Get Railway database connection details from environment
-$host = $_ENV['MYSQLHOST'] ?? 'localhost';
-$port = $_ENV['MYSQLPORT'] ?? '3306';
-$dbname = $_ENV['MYSQLDATABASE'] ?? 'railway';
-$username = $_ENV['MYSQLUSER'] ?? 'root';
-$password = $_ENV['MYSQLPASSWORD'] ?? '';
-
-try {
-    $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
-    $pdo = new PDO($dsn, $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    // Test connection
-    if (isset($_GET['test'])) {
-        echo json_encode([
-            'success' => true,
-            'message' => 'Connected to Railway MySQL!',
-            'database' => $dbname,
-            'host' => $host
-        ]);
-        exit;
-    }
-    
-} catch (PDOException $e) {
-    echo json_encode([
-        'success' => false,
-        'error' => $e->getMessage()
-    ]);
-    exit;
-}
-
-
-
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
